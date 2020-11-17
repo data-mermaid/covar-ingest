@@ -31,10 +31,10 @@ class BaseInfrastructure(core.Stack):
                     )
             },
             # max_azs=99,  # Means use all AZs
-            max_azs=2,
+            max_azs=3,
             cidr=cidr_block,
             # configuration will create a subnet for each config, in each AZ.
-            # So us-east-1 6 public, and 6 private
+            # So us-east-1 3 public, and 3 private
             subnet_configuration=[
                 ec2.SubnetConfiguration(
                     name="Public",
