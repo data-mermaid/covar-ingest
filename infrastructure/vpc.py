@@ -3,7 +3,8 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_batch as batch,
     aws_ecs as ecs,
-    aws_s3 as s3
+    aws_s3 as s3,
+    aws_iam as iam
 )
 
 # TODO Add Fargate?? Or just use Batch?
@@ -180,6 +181,22 @@ class BaseInfrastructure(core.Stack):
             priority=10
         )
 
+        self.lambda_function_role = iam.Role(
+            self,
+            'lambda-function-role',
+            role_name=f'{platform_identifier}-lambda-function',
+            description='',
+            assumed_by=iam.ServicePrincipal(service='lambda.amazonaws.com'),
+        )
+
+        self.batch_job_role = iam.Role(
+            self,
+            'lambda-function-role',
+            role_name=f'{platform_identifier}-batch-job',
+            description='',
+            assumed_by=iam.ServicePrincipal(service='ecs-tasks.amazonaws.com'),
+        )
+
         self.intermediate_bucket = s3.Bucket(
             self,
             f'{platform_identifier}-data-bucket',
@@ -190,7 +207,8 @@ class BaseInfrastructure(core.Stack):
                 ignore_public_acls=True,
                 restrict_public_buckets=True
             ),
-            lifecycle_rules=[s3.LifecycleRule(
-                expiration=core.Duration.days(30)
-            )]
         )
+        self.intermediate_bucket.grant_read_write(self.lambda_function_role)
+        self.intermediate_bucket.grant_read_write(self.batch_job_role)
+
+        
