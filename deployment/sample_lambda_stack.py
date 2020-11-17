@@ -14,7 +14,7 @@ class SampleLambdaIngestStack(core.Stack):
             self,
             'sample-ingest-function',
             # function_name=function_name,
-            code=lambdas.Code.from_asset(f'./functions/sample_ingest'), # If no dependencies.
+            code=lambdas.Code.from_asset(f'./functions/sample_ingest_function'), # If no dependencies.
             runtime=lambdas.Runtime.PYTHON_3_7,
             handler=f'main.lambda_handler',
             # role=self.function_role,

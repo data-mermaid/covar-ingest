@@ -17,6 +17,6 @@ infra = BaseInfrastructure(
 
 # Applications
 SampleLambdaIngestStack(app, "sample-lambda-ingest-dev", env=DEPLOY_ENV)
-SampleJobIngestStack(app, 'sample-job-ingest-dev', app=DEPLOY_ENV)
+SampleJobIngestStack(app, 'sample-job-ingest-dev', env=DEPLOY_ENV)
 
 app.synth()
