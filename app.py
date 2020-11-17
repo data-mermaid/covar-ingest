@@ -2,15 +2,21 @@
 
 from aws_cdk import core
 
-from deployment.sample_lambda_stack import SampleIngestStack
+from infrastructure.vpc import BaseInfrastructure
+from deployment.sample_lambda_stack import SampleLambdaIngestStack
+from deployment.sample_job_stack import SampleJobIngestStack
 
-DEPLOY_ENV = core.Environment(
-    account='',
-    region=''
-)
+DEPLOY_ENV = core.Environment(account='138863487738', region='us-east-1')
 
 app = core.App()
 
-SampleIngestStack(app, "sample-ingest-dev")
+# Infrastructure
+infra = BaseInfrastructure(
+    app, 'base-infrastructure', cidr_block='10.0.0.0/16', env=DEPLOY_ENV
+)
+
+# Applications
+SampleLambdaIngestStack(app, "sample-lambda-ingest-dev", env=DEPLOY_ENV)
+SampleJobIngestStack(app, 'sample-job-ingest-dev', app=DEPLOY_ENV)
 
 app.synth()

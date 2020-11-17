@@ -8,7 +8,7 @@ from aws_cdk import (
 
 # TODO Add Fargate?? Or just use Batch?
 
-class TdgInfrastructure(core.Stack):
+class BaseInfrastructure(core.Stack):
     def __init__(
         self,
         scope: core.Construct,
