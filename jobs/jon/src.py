@@ -3,24 +3,14 @@ import urllib.request
 from osgeo import gdal
 import json
 from datetime import datetime, timedelta
-# import datetime
 
 # https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B(2020-11-15T12:00:00Z):1:(2020-11-15T12:00:00Z)%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D
 # dhw_5km_00c3_7b6f_8b8a.tif
 
 def invoke():
     dtime = "2020-11-15T12:00:00Z"
-    
-    req = urllib.request.Request('https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B(2020-11-15T12:00:00Z):1:(2020-11-15T12:00:00Z)%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D')
     try: 
-        filedata = urllib.request.urlopen(req)
-        filename = filedata.info().get_filename()
-        filepath = f"data/{filename}"
-        print(filepath)
-
-        datatowrite = filedata.read()
-        with open(filepath, 'wb') as f:
-            f.write(datatowrite)
+        filename = request(dtime)
         print(f"starting cog transformation")
         output_cog = cog(filename)
         stac(output_cog, dtime)
@@ -31,10 +21,21 @@ def invoke():
         print(f'We failed to reach a server.')
         print(f'Reason: {e.reason}')
 
+def request(datetime):
+    req = urllib.request.Request('https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B(2020-11-15T12:00:00Z):1:(2020-11-15T12:00:00Z)%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D')
+    filedata = urllib.request.urlopen(req)
+    filename = filedata.info().get_filename()
+    filepath = f"data/{filename}"
+    print(filepath)
+
+    datatowrite = filedata.read()
+    with open(filepath, 'wb') as f:
+        f.write(datatowrite)
+    return filename
+
 def stac(filename, datetime):
     start = datetime
     end = end_times(datetime)
-    # print(end)
 
     with open('stac_items/template.json') as f:
         data = json.load(f)
@@ -53,7 +54,7 @@ def end_times(dtime):
     hours_added = timedelta(hours = hours)
     dtime_end = dtime_strt + hours_added
     dtime_end = dtime_end.strftime("%Y-%m-%dT%H:%M:%SZ")
-    #print(dtime_end)
+
     return str(dtime_end)
 
 def cog(filename):
