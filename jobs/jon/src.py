@@ -11,13 +11,16 @@ def invoke():
         filedata = urllib.request.urlopen(req)
 
         filename = filedata.info().get_filename()
-        print(filename)
-        filepath = "data/" + filename
+     
+        filepath = f"data/{filename}"
+
+        print(filepath)
+        #filepath = "data/" + filename
         datatowrite = filedata.read()
         with open(filepath, 'wb') as f:
             f.write(datatowrite)
         print("starting cog transformation")
-        cog()
+        cog(filename)
     except urllib.error.URLError as e:
         print('The server couldn\'t fulfill the request.')
         print('Error code: ', e.code)
@@ -25,12 +28,10 @@ def invoke():
         print('We failed to reach a server.')
         print('Reason: ', e.reason)
 
-    print("hello")
-
-def cog():
+def cog(filename):
     input_tif_dir = "data/"
-    input_tif = f"{input_tif_dir}/dhw_5km_00c3_7b6f_8b8a.tif"
-    output_cog = f"{input_tif_dir}/dhw_5km_00c3_7b6f_8b8a_cog.tif"
+    input_tif = f"{input_tif_dir}{filename}"
+    output_cog = f"{input_tif_dir}cog_{filename}"
     tif_to_cog(input_tif, output_cog)
 
 def tif_to_cog(input_tif, output_cog):
