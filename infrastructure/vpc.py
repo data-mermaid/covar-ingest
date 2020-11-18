@@ -191,7 +191,7 @@ class BaseInfrastructure(core.Stack):
 
         self.batch_job_role = iam.Role(
             self,
-            'lambda-function-role',
+            'batch-job-role',
             role_name=f'{platform_identifier}-batch-job',
             description='',
             assumed_by=iam.ServicePrincipal(service='ecs-tasks.amazonaws.com'),
@@ -210,5 +210,3 @@ class BaseInfrastructure(core.Stack):
         )
         self.intermediate_bucket.grant_read_write(self.lambda_function_role)
         self.intermediate_bucket.grant_read_write(self.batch_job_role)
-
-        
