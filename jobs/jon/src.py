@@ -8,12 +8,18 @@ from datetime import datetime, timedelta
 # dhw_5km_00c3_7b6f_8b8a.tif
 
 def invoke():
-    dtime = "2020-11-15T12:00:00Z"
+    
+
     try: 
-        filename = request(dtime)
-        print(f"starting cog transformation")
-        output_cog = cog(filename)
-        stac(output_cog, dtime)
+        start_time = f"2020-11-12T12:00:00Z"
+        numdays = 5
+        for i in range(numdays):
+            dtime = end_times(start_time)
+            start_time = dtime
+            filename = request(dtime)
+            print(f"starting cog transformation: {filename}")
+            output_cog = cog(filename)
+            stac(output_cog, dtime)
     except urllib.error.URLError as e:
         print(f'The server couldn\'t fulfill the request.')
         print(f'Error code: {e.code}')
@@ -22,11 +28,12 @@ def invoke():
         print(f'Reason: {e.reason}')
 
 def request(datetime):
-    req = urllib.request.Request('https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B(2020-11-15T12:00:00Z):1:(2020-11-15T12:00:00Z)%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D')
+    url = f'https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B({datetime}):1:({datetime})%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D'
+    req = urllib.request.Request(url)
     filedata = urllib.request.urlopen(req)
     filename = filedata.info().get_filename()
     filepath = f"data/{filename}"
-    print(filepath)
+    # print(filepath)
 
     datatowrite = filedata.read()
     with open(filepath, 'wb') as f:
@@ -97,8 +104,6 @@ def tif_to_cog(input_tif, output_cog):
         )
     data_set = None
     data_set2 = None
-
-
 
 if __name__ == "__main__":
     invoke()
