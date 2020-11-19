@@ -41,9 +41,7 @@ class DhwIngestStack(core.Stack):
                 memory_limit_mib=16384,
                 vcpus=1,
                 environment={
-                    "ENV": "",
-                    "AWS_BUCKET": "covariate-ingest-data",
-                    "STAC_API": ""
+                    "STAC_API": "https://discovery-cosmos.azurewebsites.net/stac/dev/addItem"
                 },
                 privileged=False,
             ),
@@ -54,8 +52,8 @@ class DhwIngestStack(core.Stack):
 
         events.Rule(
             self,
-            'ingest-trigger-sample',
-            description='Trigger for sample ingest',
+            'dhw-ingest-trigger',
+            description='Trigger for DHW ingest',
             schedule=events.Schedule.cron(minute="0", hour="4"), # Every day at 4am
             targets=[
                 targets.BatchJob(
