@@ -30,15 +30,16 @@
       }
     ],
     "assets":{
-      "image":{
-        "href":"dhw_5km_00c3_7b6f_8b8a.tif",
-        "title":"dhw cog",
-        "type":"geotiff"
-      },
       "thumbnail":{
         "href":"dhw_5km_00c3_7b6f_8b8a.tif",
         "type":"geotiff",
         "title":"Thumbnail"
+      },
+      "B1": {
+        "href": "s3://covariate-ingest-data-dev/water_pollution/cogs/sed_plume_avg_cog.tif",
+        "title": "dhw",
+        "type": "image/tiff; application=geotiff; profile=cloud-optimized"
       }
-    }
   }
+}
+  

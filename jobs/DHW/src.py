@@ -79,9 +79,8 @@ def stac(filename, datetime):
     data["properties"]["datetime"] = datetime
     data["properties"]["start_datetime"] = start
     data["properties"]["end_datetime"] = end
-    data["assets"]["image"]["href"] = f"s3://covariate-ingest-data-dev/dhw/cogs/{idstring}.tif"
-    data["assets"]["image"]["href"] = f"s3://covariate-ingest-data-dev/dhw/cogs/{idstring}.tif"
     data["assets"]["thumbnail"]["href"] = f"s3://covariate-ingest-data-dev/dhw/cogs/{idstring}.tif"
+    data["assets"]["B1"]["href"] = f"s3://covariate-ingest-data-dev/dhw/cogs/{idstring}.tif"
     data["links"][0] = {
         "rel":"self",
         "href":f"s3://covariate-ingest-data-dev/dhw/stac_items/{idstring}.json"
