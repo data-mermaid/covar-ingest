@@ -24,7 +24,7 @@
     "assets":{
       "image":{
         "href":"dhw_5km_00c3_7b6f_8b8a.tif",
-        "title":"dhw data",
+        "title":"dhw cog",
         "type":"geotiff"
       },
       "thumbnail":{

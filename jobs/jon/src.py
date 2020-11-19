@@ -25,8 +25,8 @@ def invoke():
             filename = request(dtime)
             print(f"starting cog transformation: {filename}")
             output_cog = cog(filename)
-            stac(output_cog, dtime)
-            to_aws(output_cog, filename)
+            stac_item = stac(output_cog, dtime)
+            to_aws(output_cog, filename, stac_item)
     except urllib.error.URLError as e:
         print(f'The server couldn\'t fulfill the request.')
         print(f'Error code: {e.code}')
@@ -50,17 +50,27 @@ def request(datetime):
 def stac(filename, datetime):
     start = datetime
     end = end_times(datetime)
-
+    
     with open('stac_items/template.json') as f:
         data = json.load(f)
     data["id"] = filename[5:-4]
     data["properties"]["datetime"] = datetime
     data["properties"]["start_datetime"] = start
     data["properties"]["end_datetime"] = end
+    data["assets"]["image"]["href"] = f"s3://covariate-ingest-data-dev/dhw/cogs/{filename[5:-4]}.tif"
+    data["assets"]["image"]["href"] = f"s3://covariate-ingest-data-dev/dhw/cogs/{filename[5:-4]}.tif"
+    data["assets"]["thumbnail"]["href"] = f"s3://covariate-ingest-data-dev/dhw/cogs/{filename[5:-4]}.tif"
+    data["links"][0] = {
+        "rel":"self",
+        "href":f"s3://covariate-ingest-data-dev/dhw/stac_items/{filename[5:-4]}.json"
+    }
+    
     print(data)
 
     with open(f'stac_items/{filename[5:-4]}.json', 'w') as json_file:
         json.dump(data, json_file)
+
+    return f'stac_items/{filename[5:-4]}.json'
 
 def end_times(dtime):
     dtime_strt = datetime.strptime(dtime, "%Y-%m-%dT%H:%M:%SZ")
@@ -112,15 +122,18 @@ def tif_to_cog(input_tif, output_cog):
     data_set = None
     data_set2 = None
 
-def to_aws(cog_file, filename): 
-    print(cog_file)
-    filename = f"dhw/{filename}"
-    uploaded = upload_to_aws(cog_file, 'covariate-ingest-data-dev', filename)
+def to_aws(cog_file, filename, stac_item): 
+    print(stac_item)
+    filename = f"dhw/cogs/cog_{filename}"
+    stac_aws = f"dhw/{stac_item}"
+    upload_cog = upload_to_aws(cog_file, 'covariate-ingest-data-dev', filename)
+
+    upload_stac = upload_to_aws(stac_item, 'covariate-ingest-data-dev', stac_aws)
+
 
 def upload_to_aws(local_file, bucket, s3_file):
     s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID,
                       aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
-
     try:
         s3.upload_file(local_file, bucket, s3_file)
         print("Upload Successful")
