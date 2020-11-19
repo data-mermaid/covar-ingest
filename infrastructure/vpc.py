@@ -3,7 +3,8 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_batch as batch,
     aws_ecs as ecs,
-    aws_s3 as s3
+    aws_s3 as s3,
+    aws_iam as iam
 )
 
 # TODO Add Fargate?? Or just use Batch?
@@ -18,6 +19,12 @@ class BaseInfrastructure(core.Stack):
         **kwargs
     ) -> None:
         super().__init__(scope, id, **kwargs)
+
+        self.lambda_function_role_name = f'{platform_identifier}-lambda-function'
+        self.node.set_context('lambda_function_role_name', self.lambda_function_role_name)
+
+        self.batch_job_role_name = f'{platform_identifier}-batch-job'
+        self.node.set_context('batch_job_role_name', self.batch_job_role_name)
 
         self.vpc = ec2.Vpc(
             self,
@@ -180,17 +187,35 @@ class BaseInfrastructure(core.Stack):
             priority=10
         )
 
+        self.lambda_function_role = iam.Role(
+            self,
+            'lambda-function-role',
+            role_name=self.lambda_function_role_name,
+            description='',
+            assumed_by=iam.ServicePrincipal(service='lambda.amazonaws.com'),
+        )
+        
+
+        self.batch_job_role = iam.Role(
+            self,
+            'batch-job-role',
+            role_name=self.batch_job_role_name,
+            description='',
+            assumed_by=iam.ServicePrincipal(service='ecs-tasks.amazonaws.com'),
+        )
+
         self.intermediate_bucket = s3.Bucket(
             self,
             f'{platform_identifier}-data-bucket',
             bucket_name=f'{platform_identifier}-data-dev',
             block_public_access=s3.BlockPublicAccess(
-                block_public_acls=True,
-                block_public_policy=True,
-                ignore_public_acls=True,
-                restrict_public_buckets=True
+                block_public_acls=False,
+                block_public_policy=False,
+                ignore_public_acls=False,
+                restrict_public_buckets=False
             ),
-            lifecycle_rules=[s3.LifecycleRule(
-                expiration=core.Duration.days(30)
-            )]
         )
+        self.intermediate_bucket.grant_read_write(self.lambda_function_role)
+        self.intermediate_bucket.grant_read_write(self.batch_job_role)
+
+        cluster = ecs.Cluster(self, "covar-api-cluster", vpc=self.vpc)
