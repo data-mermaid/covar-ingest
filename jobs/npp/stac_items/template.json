@@ -19,6 +19,14 @@
       {
         "rel":"self",
         "href":""
+      },
+      {
+        "rel": "self",
+        "href": ""
+      },
+      {
+        "rel": "self",
+        "href": ""
       }
     ],
     "assets":{

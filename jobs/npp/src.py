@@ -1,9 +1,21 @@
 import argparse
+import boto3
 import json
+import os
 import requests
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from os.path import basename, join, splitext
 from osgeo import gdal, osr
+
+load_dotenv()
+
+ENV = os.getenv("ENV")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_REGION")
+_bucket = os.getenv("AWS_BUCKET")
+AWS_BUCKET = f"{_bucket}-{ENV}"
 
 
 # TODO: abstract out an IngestTask base class that all jobs can inherit from
@@ -11,6 +23,7 @@ class IngestNetCDFTask(object):
     DATE_FORMAT = "%Y-%m-%d"
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     ROOT = "/usr/src/app"
+    AWS_KEY = "npp"
     nc_pattern = "A{startyear}{startday}_{endyear}{endday}.L3m_8day_primprod.nc"
     # TODO: see about crosswalking with older NPP products
     #  (https://coastwatch.pfeg.noaa.gov/erddap/griddap/index.html?page=1&itemsPerPage=1000)
@@ -42,7 +55,19 @@ class IngestNetCDFTask(object):
             endday=self.taskdate.timetuple().tm_yday,
         )
 
-    def get_stac_datetimes(self):
+        session = boto3.session.Session(
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name=AWS_REGION
+        )
+        self.s3 = session.client('s3')
+
+    def _get_aws_keys(self, cog, stac_item):
+        cog_key = f"{self.AWS_KEY}/cogs/{cog}"
+        stac_key = f"{self.AWS_KEY}/stac_items/{stac_item}"
+        return cog_key, stac_key
+
+    def _get_stac_datetimes(self):
         end_datetime = self.taskdate
         end_datetime_str = end_datetime.strftime(self.DATETIME_FORMAT)
         start_datetime = end_datetime - timedelta(days=self.inputs["npp"]["composite"])
@@ -51,13 +76,14 @@ class IngestNetCDFTask(object):
         return start_datetime_str, end_datetime_str
 
     def invoke(self):
-        print(f"Beginning NPP ingest for {self.taskdate}")
+        print(f"Beginning {ENV} NPP ingest for {self.taskdate}")
 
         self.get_netcdf()
         cog = self.netcdf2cog()
         # TODO: incorporate near-shore correction: https://github.com/pmarchand1/msec/tree/master/npp
-        self.stac(cog)
-        # self.cleanup()  # TODO
+        stac = self.stac(cog)
+        self.to_aws(cog, stac)
+        self.cleanup([cog, stac])
         print("Done!")
 
     def get_netcdf(self):
@@ -110,20 +136,47 @@ class IngestNetCDFTask(object):
         id = basename(filename)[0:-4]
         stacname = f"{id}.json"
         print(f"Writing STAC metadata to {stacname}")
-        start, end = self.get_stac_datetimes()
+        cog_key, stac_key = self._get_aws_keys(basename(filename), stacname)
+        start, end = self._get_stac_datetimes()
 
         with open(join(self.ROOT, "stac_items", "template.json")) as f:
             data = json.load(f)
         data["id"] = id
-        data["links"][0]["href"] = stacname
         data["properties"]["datetime"] = end
         data["properties"]["start_datetime"] = start
         data["properties"]["end_datetime"] = end
-        data["assets"]["image"]["href"] = basename(filename)
-        data["assets"]["thumbnail"]["href"] = basename(filename)
+        data["assets"]["image"]["href"] = f"s3://{AWS_BUCKET}/{cog_key}"
+        data["assets"]["thumbnail"]["href"] = f"s3://{AWS_BUCKET}/{cog_key}"
+        data["links"][0] = {
+            "rel": "self",
+            "href": f"s3://{AWS_BUCKET}/{stac_key}"
+        }
+        data["links"][1] = {
+            "rel": "collection",
+            "href": f"s3://{AWS_BUCKET}/{self.AWS_KEY}/collection.json"
+        }
+        data["links"][2] = {
+            "rel": "parent",
+            "href": f"s3://{AWS_BUCKET}/{self.AWS_KEY}/collection.json"
+        }
 
         with open(join(self.ROOT, "stac_items", stacname), "w") as json_file:
             json.dump(data, json_file)
+
+        return join(self.ROOT, "stac_items", stacname)
+
+    def to_aws(self, cog_file, stac_file):
+        cog_key, stac_key = self._get_aws_keys(basename(cog_file), basename(stac_file))
+        print(f"Uploading {cog_file} to {AWS_BUCKET}/{cog_key}")
+        self.s3.upload_file(cog_file, AWS_BUCKET, cog_key)
+        print(f"Uploading {stac_file} to {AWS_BUCKET}/{stac_key}")
+        self.s3.upload_file(stac_file, AWS_BUCKET, stac_key)
+
+    def cleanup(self, files):
+        print(f"Cleaning up {files}")
+        for f in files:
+            if os.path.exists(f):
+                os.remove(f)
 
 
 if __name__ == "__main__":
