@@ -24,7 +24,7 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 def invoke():
     try: 
         now_time = datetime.now().date()
-        numdays = 1
+        numdays = 7
         hours_to_go_back = numdays*24
         days_subtracted = timedelta(hours = hours_to_go_back)
         start_time = now_time - days_subtracted
@@ -97,7 +97,7 @@ def stac(filename, datetime):
     
     with open(f'stac_items/{idstring}.json', 'w') as json_file:
         json.dump(data, json_file)
-        
+
     url = STAC_API
 
     myobj = {
