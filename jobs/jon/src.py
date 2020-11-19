@@ -3,16 +3,22 @@ import urllib.request
 from osgeo import gdal
 import json
 from datetime import datetime, timedelta
+from botocore.exceptions import NoCredentialsError
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 # https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B(2020-11-15T12:00:00Z):1:(2020-11-15T12:00:00Z)%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D
 # dhw_5km_00c3_7b6f_8b8a.tif
 
 def invoke():
-    
-
     try: 
         start_time = f"2020-11-12T12:00:00Z"
-        numdays = 5
+        numdays = 1
         for i in range(numdays):
             dtime = end_times(start_time)
             start_time = dtime
@@ -20,6 +26,7 @@ def invoke():
             print(f"starting cog transformation: {filename}")
             output_cog = cog(filename)
             stac(output_cog, dtime)
+            to_aws(output_cog, filename)
     except urllib.error.URLError as e:
         print(f'The server couldn\'t fulfill the request.')
         print(f'Error code: {e.code}')
@@ -104,6 +111,26 @@ def tif_to_cog(input_tif, output_cog):
         )
     data_set = None
     data_set2 = None
+
+def to_aws(cog_file, filename): 
+    print(cog_file)
+    filename = f"dhw/{filename}"
+    uploaded = upload_to_aws(cog_file, 'covariate-ingest-data-dev', filename)
+
+def upload_to_aws(local_file, bucket, s3_file):
+    s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID,
+                      aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+
+    try:
+        s3.upload_file(local_file, bucket, s3_file)
+        print("Upload Successful")
+        return True
+    except FileNotFoundError:
+        print("The file was not found")
+        return False
+    except NoCredentialsError:
+        print("Credentials not available")
+        return False
 
 if __name__ == "__main__":
     invoke()
