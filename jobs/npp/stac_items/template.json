@@ -1,0 +1,36 @@
+{
+    "stac_version": "1.0.0-beta.2",
+    "stac_extensions": [],
+    "type":"Feature",
+    "id":"",
+    "bbox":[180,-90,-180,90],
+    "geometry":{
+      "type":"Polygon",
+      "coordinates":[
+          [[-180, -90], [-180, 90], [180, 90], [180, -90], [-180, -90]]
+      ]
+    },
+    "properties":{
+      "datetime":"",
+      "start_datetime":"",
+      "end_datetime":""
+    },
+    "links":[
+      {
+        "rel":"self",
+        "href":""
+      }
+    ],
+    "assets":{
+      "image":{
+        "href":"",
+        "title":"Net Primary Productivity",
+        "type":"geotiff"
+      },
+      "thumbnail":{
+        "href":"",
+        "type":"geotiff",
+        "title":"Thumbnail"
+      }
+    }
+  }
