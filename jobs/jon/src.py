@@ -11,14 +11,21 @@ load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 
 # https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B(2020-11-15T12:00:00Z):1:(2020-11-15T12:00:00Z)%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D
 # dhw_5km_00c3_7b6f_8b8a.tif
 
 def invoke():
     try: 
-        start_time = f"2020-11-12T12:00:00Z"
-        numdays = 1
+        now_time = datetime.now().date()
+        numdays = 3
+        hours_to_go_back = numdays*24
+        days_subtracted = timedelta(hours = hours_to_go_back)
+        start_time = now_time - days_subtracted
+        start_time = start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
+        print(start_time)
+
         for i in range(numdays):
             dtime = end_times(start_time)
             start_time = dtime
