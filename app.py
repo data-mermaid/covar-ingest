@@ -5,6 +5,7 @@ from aws_cdk import core
 from infrastructure.vpc import BaseInfrastructure
 from deployment.sample_lambda_stack import SampleLambdaIngestStack
 from deployment.sample_job_stack import SampleJobIngestStack
+from deployment.dhw_ingest import DhwIngestStack
 
 DEPLOY_ENV = core.Environment(account='138863487738', region='us-east-1')
 
@@ -16,7 +17,13 @@ infra = BaseInfrastructure(
 )
 
 # Applications
-SampleLambdaIngestStack(app, "sample-lambda-ingest-dev", env=DEPLOY_ENV)
-SampleJobIngestStack(app, 'sample-job-ingest-dev', env=DEPLOY_ENV)
+# SampleLambdaIngestStack(app, "sample-lambda-ingest-dev", env=DEPLOY_ENV)
+# SampleJobIngestStack(app, 'sample-job-ingest-dev', env=DEPLOY_ENV)
+
+DhwIngestStack(
+    app,
+    'dhw-ingest-job-dev',
+    env=DEPLOY_ENV
+)
 
 app.synth()
