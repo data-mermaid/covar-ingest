@@ -24,7 +24,7 @@ def invoke():
             start_time = dtime
             filename = request(dtime)
             print(f"starting cog transformation: {filename}")
-            output_cog = cog(filename)
+            output_cog = cog(filename)          
             stac_item = stac(output_cog, dtime)
             to_aws(output_cog, filename, stac_item)
     except urllib.error.URLError as e:
@@ -65,6 +65,14 @@ def stac(filename, datetime):
         "rel":"self",
         "href":f"s3://covariate-ingest-data-dev/dhw/stac_items/{idstring}.json"
     }
+    data["links"][1] = {
+        "rel":"collection",
+        "href":f"s3://covariate-ingest-data-dev/dhw/collection.json"
+    }
+    data["links"][2] = {
+        "rel":"parent",
+        "href":f"s3://covariate-ingest-data-dev/dhw/collection.json"
+    }
     print(data)
 
     with open(f'stac_items/{idstring}.json', 'w') as json_file:
@@ -78,14 +86,17 @@ def end_times(dtime):
     hours_added = timedelta(hours = hours)
     dtime_end = dtime_strt + hours_added
     dtime_end = dtime_end.strftime("%Y-%m-%dT%H:%M:%SZ")
-
     return str(dtime_end)
 
 def cog(filename):
-    input_tif_dir = "data/"
-    input_tif = f"{input_tif_dir}{filename}"
-    output_cog = f"{input_tif_dir}cog_{filename}"
+    input_dir = "data/"
+    input_tif = f"{input_dir}{filename}"
+    output_cog = f"{input_dir}cog_{filename}"
     tif_to_cog(input_tif, output_cog)
+    if os.path.exists(f'{input_dir}{filename}'):
+        os.remove(f'{input_dir}{filename}')
+    else:
+        print(f'Intermediate file {input_dir}{filename} does not exist')
     return output_cog
 
 def tif_to_cog(input_tif, output_cog):
@@ -123,7 +134,6 @@ def tif_to_cog(input_tif, output_cog):
     data_set2 = None
 
 def to_aws(cog_file, filename, stac_item): 
-    print(stac_item)
     filename = f"dhw/cogs/cog_{filename}"
     stac_aws = f"dhw/{stac_item}"
     upload_cog = upload_to_aws(cog_file, 'covariate-ingest-data-dev', filename)
