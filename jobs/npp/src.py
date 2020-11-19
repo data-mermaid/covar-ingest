@@ -16,6 +16,8 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_REGION = os.getenv("AWS_REGION")
 _bucket = os.getenv("AWS_BUCKET")
 AWS_BUCKET = f"{_bucket}-{ENV}"
+_stac_url = os.getenv("STAC_API")
+STAC_API = f"{_stac_url}/{ENV}"
 
 
 # TODO: abstract out an IngestTask base class that all jobs can inherit from
@@ -37,6 +39,7 @@ class IngestNetCDFTask(object):
     }
 
     def __init__(self, *args, **kwargs):
+        self.stac_metadata = None
         # TODO: timezone?
         _taskdate = datetime.now().date()
         try:
@@ -83,6 +86,7 @@ class IngestNetCDFTask(object):
         # TODO: incorporate near-shore correction: https://github.com/pmarchand1/msec/tree/master/npp
         stac = self.stac(cog)
         self.to_aws(cog, stac)
+        self.stac_db()
         self.cleanup([cog, stac])
         print("Done!")
 
@@ -163,7 +167,19 @@ class IngestNetCDFTask(object):
         with open(join(self.ROOT, "stac_items", stacname), "w") as json_file:
             json.dump(data, json_file)
 
+        self.stac_metadata = data
+
         return join(self.ROOT, "stac_items", stacname)
+
+    def stac_db(self):
+        url = f"{STAC_API}/addItem"
+        print(f"Writing STAC metadata to {url}")
+        stac_payload = {
+            "collection": "NPP",
+            "item": self.stac_metadata
+        }
+        r = requests.post(url, json=stac_payload)
+        print(r.json())
 
     def to_aws(self, cog_file, stac_file):
         cog_key, stac_key = self._get_aws_keys(basename(cog_file), basename(stac_file))
