@@ -19,7 +19,7 @@ DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 def invoke():
     try: 
         now_time = datetime.now().date()
-        numdays = 3
+        numdays = 1
         hours_to_go_back = numdays*24
         days_subtracted = timedelta(hours = hours_to_go_back)
         start_time = now_time - days_subtracted
@@ -31,15 +31,24 @@ def invoke():
             start_time = dtime
             filename = request(dtime)
             print(f"starting cog transformation: {filename}")
-            output_cog = cog(filename)          
+            output_cog = cog(filename)  
+                    
             stac_item = stac(output_cog, dtime)
+            print(stac_item)
             to_aws(output_cog, filename, stac_item)
+            delete(output_cog)
+            delete(stac_item)
+   
     except urllib.error.URLError as e:
         print(f'The server couldn\'t fulfill the request.')
         print(f'Error code: {e.code}')
     except urllib.error.HTTPError as e:
         print(f'We failed to reach a server.')
         print(f'Reason: {e.reason}')
+    
+def delete(path):
+    if os.path.exists(f'{path}'):
+        os.remove(f'{path}')
 
 def request(datetime):
     url = f'https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B({datetime}):1:({datetime})%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D'
@@ -100,10 +109,7 @@ def cog(filename):
     input_tif = f"{input_dir}{filename}"
     output_cog = f"{input_dir}cog_{filename}"
     tif_to_cog(input_tif, output_cog)
-    if os.path.exists(f'{input_dir}{filename}'):
-        os.remove(f'{input_dir}{filename}')
-    else:
-        print(f'Intermediate file {input_dir}{filename} does not exist')
+    delete(input_tif)
     return output_cog
 
 def tif_to_cog(input_tif, output_cog):
