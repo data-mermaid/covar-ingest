@@ -97,7 +97,7 @@ def stac(filename, datetime):
     
     with open(f'stac_items/{idstring}.json', 'w') as json_file:
         json.dump(data, json_file)
-
+        
     url = STAC_API
 
     myobj = {
