@@ -14,7 +14,9 @@ load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+STAC_API = os.getenv('STAC_API')
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
 
 # https://pae-paha.pacioos.hawaii.edu/erddap/griddap/dhw_5km.geotif?CRW_DHW%5B(2020-11-15T12:00:00Z):1:(2020-11-15T12:00:00Z)%5D%5B(89.975):1:(-89.975)%5D%5B(-179.975):1:(179.975)%5D
 # dhw_5km_00c3_7b6f_8b8a.tif
@@ -96,10 +98,10 @@ def stac(filename, datetime):
     with open(f'stac_items/{idstring}.json', 'w') as json_file:
         json.dump(data, json_file)
 
-    url = 'https://discovery-cosmos.azurewebsites.net/stac/dev/addItem'
+    url = STAC_API
 
     myobj = {
-        "collection": "hack_test",
+        "collection": "DHW",
         "item": data
     }     
     r = requests.post(url, json = myobj)
