@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 from botocore.exceptions import NoCredentialsError
 from dotenv import load_dotenv
 import os
+import requests
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 load_dotenv()
 
@@ -37,7 +40,7 @@ def invoke():
             print(stac_item)
             to_aws(output_cog, filename, stac_item)
             delete(output_cog)
-            delete(stac_item)
+            delete(stac_item) 
    
     except urllib.error.URLError as e:
         print(f'The server couldn\'t fulfill the request.')
@@ -89,11 +92,20 @@ def stac(filename, datetime):
         "rel":"parent",
         "href":f"s3://covariate-ingest-data-dev/dhw/collection.json"
     }
-    print(data)
-
+    
     with open(f'stac_items/{idstring}.json', 'w') as json_file:
         json.dump(data, json_file)
 
+    url = 'https://discovery-cosmos.azurewebsites.net/stac/dev/addItem'
+
+    myobj = {
+        "collection": "hack_test",
+        "item": data
+    }     
+    r = requests.post(url, json = myobj)
+    print(r.json())
+    print(r.text)  
+    
     return f'stac_items/{idstring}.json'
 
 def end_times(dtime):
