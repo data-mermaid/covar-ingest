@@ -20,6 +20,12 @@ class BaseInfrastructure(core.Stack):
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
+        self.lambda_function_role_name = f'{platform_identifier}-lambda-function'
+        self.node.set_context('lambda_function_role_name', self.lambda_function_role_name)
+
+        self.batch_job_role_name = f'{platform_identifier}-batch-job'
+        self.node.set_context('batch_job_role_name', self.batch_job_role_name)
+
         self.vpc = ec2.Vpc(
             self,
             "vpc",
@@ -184,15 +190,16 @@ class BaseInfrastructure(core.Stack):
         self.lambda_function_role = iam.Role(
             self,
             'lambda-function-role',
-            role_name=f'{platform_identifier}-lambda-function',
+            role_name=self.lambda_function_role_name,
             description='',
             assumed_by=iam.ServicePrincipal(service='lambda.amazonaws.com'),
         )
+        
 
         self.batch_job_role = iam.Role(
             self,
             'batch-job-role',
-            role_name=f'{platform_identifier}-batch-job',
+            role_name=self.batch_job_role_name,
             description='',
             assumed_by=iam.ServicePrincipal(service='ecs-tasks.amazonaws.com'),
         )
@@ -202,11 +209,13 @@ class BaseInfrastructure(core.Stack):
             f'{platform_identifier}-data-bucket',
             bucket_name=f'{platform_identifier}-data-dev',
             block_public_access=s3.BlockPublicAccess(
-                block_public_acls=True,
-                block_public_policy=True,
-                ignore_public_acls=True,
-                restrict_public_buckets=True
+                block_public_acls=False,
+                block_public_policy=False,
+                ignore_public_acls=False,
+                restrict_public_buckets=False
             ),
         )
         self.intermediate_bucket.grant_read_write(self.lambda_function_role)
         self.intermediate_bucket.grant_read_write(self.batch_job_role)
+
+        cluster = ecs.Cluster(self, "covar-api-cluster", vpc=self.vpc)
