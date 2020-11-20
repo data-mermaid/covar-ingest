@@ -58,7 +58,7 @@ class DhwIngestStack(core.Stack):
             targets=[
                 targets.BatchJob(
                     job_queue=job_queue,
-                    job_definition=npp_job,
+                    job_definition=job,
                 )
             ],
             enabled=False
