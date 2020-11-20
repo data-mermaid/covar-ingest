@@ -1,4 +1,5 @@
 {
+    "collection": "NPP",
     "stac_version": "1.0.0-beta.2",
     "stac_extensions": [],
     "type":"Feature",
@@ -21,24 +22,19 @@
         "href":""
       },
       {
-        "rel": "self",
+        "rel": "collection",
         "href": ""
       },
       {
-        "rel": "self",
+        "rel": "parent",
         "href": ""
       }
     ],
     "assets":{
-      "image":{
+      "B1":{
         "href":"",
         "title":"Net Primary Productivity",
         "type":"geotiff"
-      },
-      "thumbnail":{
-        "href":"",
-        "type":"geotiff",
-        "title":"Thumbnail"
       }
     }
   }
