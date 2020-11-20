@@ -38,23 +38,20 @@ class NPPIngestStack(core.Stack):
                     "./jobs/npp/",
                 ),
                 job_role=job_role,
-                memory_limit_mib=16384,
+                memory_limit_mib=4096,
                 vcpus=1,
                 environment={
                     "ENV": "",
                     "AWS_BUCKET": "covariate-ingest-data",
-                    "STAC_API": ""
+                    "STAC_API": "https://discovery-cosmos.azurewebsites.net/stac/dev/addItem"
                 },
                 privileged=False,
             ),
-            # retry_attempts=3,
-            # parameters={'param1': "value1"},
-            # timeout=, # Object aws_cdk.core.Duration
         )
 
         events.Rule(
             self,
-            'ingest-trigger-sample',
+            'npp-ingest-trigger',
             description='Trigger for sample ingest',
             schedule=events.Schedule.cron(minute="0", hour="4"), # Every day at 4am
             targets=[

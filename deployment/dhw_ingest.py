@@ -38,16 +38,13 @@ class DhwIngestStack(core.Stack):
                     "./jobs/DHW/",
                 ),
                 job_role=job_role,
-                memory_limit_mib=16384,
+                memory_limit_mib=4096,
                 vcpus=1,
                 environment={
                     "STAC_API": "https://discovery-cosmos.azurewebsites.net/stac/dev/addItem"
                 },
                 privileged=False,
             ),
-            # retry_attempts=3,
-            # parameters={'param1': "value1"},
-            # timeout=, # Object aws_cdk.core.Duration
         )
 
         events.Rule(
