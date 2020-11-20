@@ -5,6 +5,10 @@ import zipfile
 from io import BytesIO
 from osgeo import gdal
 
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_BUCKET = os.getenv("AWS_BUCKET")
+
 def download(zipfile_url):
     r = requests.get(zipfile_url)
 
@@ -83,10 +87,18 @@ def tif_to_cog(input_tif, output_cog):
     data_set2 = None
 
 
+def upload_to_aws(file, bucket, destination):
+    s3 = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
+
+    s3.upload_file(file, bucket, destination)
+
+
 def process(zipfile, dataset):
     zipfile.extractall("./data")
     tif = dataset + '.tif'
     output_cog = cog(tif)
+    output_cog_path = "ghs-pop/cog/" + tif
+    upload_to_aws(output_cog, AWS_BUCKET, output_cog_path)
     print("Processing", tif)
     return
 
