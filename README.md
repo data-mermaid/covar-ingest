@@ -9,7 +9,9 @@
 5. Edited Darren's STAC template to fit fishing pressure
 6. Uploaded STAC.json and COG's for both files to AWS Fishing Pressure Folder
 
-### Potential Errors
+### Potential Errors and Next Steps
 
-1. COG's are based off of 1km squares instead of 10km squares, attempts to display the pixels and have them line up with the shapefile had the pixels off by varying degrees. Could be fixed easily.
-2. Need to check and ensure that the COG's are viewable online.
+1. COG's are based off of 1km squares instead of 10km squares, attempts to display the pixels and have them line up with the shapefile had the pixels off by varying degrees. 
+  Could be fixed through further experimentation with Raster tool and reconverting the TIFs prior to making them COGs.
+
+2. Need to check and ensure that the COG's are viewable online. They are verified within the server, but would be nice to know that they actually work. 
