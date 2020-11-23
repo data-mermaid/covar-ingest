@@ -15,3 +15,8 @@ In general, the stack files encapsulate all resources related to those ingest pr
 At the end of the hackathon, the following was completed:
 
 - dhw and npp ingest Stacks were added and deployed. However, the Cloudwatch event is disabled as the API was not ready.
+
+Action Items:
+
+- Sort out how to manually trigger the initial ingest for the dynamic sources. The Batch job or lambda will already exist, so they can be triggered manually, or sort out some other event.
+- None of the ingest processes have been tested.
