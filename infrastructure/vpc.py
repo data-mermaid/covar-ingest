@@ -218,4 +218,9 @@ class BaseInfrastructure(core.Stack):
         self.intermediate_bucket.grant_read_write(self.lambda_function_role)
         self.intermediate_bucket.grant_read_write(self.batch_job_role)
 
-        cluster = ecs.Cluster(self, "covar-api-cluster", vpc=self.vpc)
+        cluster = ecs.Cluster(
+            self, 
+            "covar-api-cluster",
+            cluster_name='covar-service-cluster',
+            vpc=self.vpc
+        )

@@ -6,6 +6,8 @@ Coral reef covariates ingestion. This repo is for all the AWS deployment files a
 
 All AWS deployment will be managed using AWS CDK. All stacks for application deployments are located in the `deployment/` directory, and stacks for resources or services are in `infrastructure/`. Reference the deployment [README.md](deployment/README.md) for more details.
 
+Link for installing AWS CDK: https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html#getting_started_install
+
 ## Lambda Functions
 
 All lambda functions will be located under the `functions/` directory. Each sub directory is a lambda function. See the `functions/sample_ingest_function/` directory for a sample.
