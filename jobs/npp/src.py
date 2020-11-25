@@ -82,6 +82,8 @@ class IngestNetCDFTask(object):
                 endday=self.enddate.timetuple().tm_yday,
             )
 
+            # TODO: check STAC to see if this day exists before reprocessing
+            # TODO: get STAC API to allow updating of existing assets
             if self.get_netcdf():
                 cog = self.netcdf2cog()
                 # TODO: incorporate near-shore correction: https://github.com/pmarchand1/msec/tree/master/npp

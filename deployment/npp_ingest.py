@@ -41,9 +41,9 @@ class NPPIngestStack(core.Stack):
                 memory_limit_mib=4096,
                 vcpus=1,
                 environment={
-                    "ENV": "",
+                    "ENV": "dev",
                     "AWS_BUCKET": "covariate-ingest-data",
-                    "STAC_API": "https://discovery-cosmos.azurewebsites.net/stac/dev/addItem"
+                    "STAC_API": "https://discovery-cosmos.azurewebsites.net/stac"
                 },
                 privileged=False,
             ),
